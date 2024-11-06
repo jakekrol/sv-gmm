@@ -17,7 +17,7 @@ Visualizing sample-wise alignment evidence for variants across different modes f
 - [Summary PDF](summary.pdf)
     - Download or select `More pages` on GitHub interface to see full results 
 
-- [Standalone figures](figs)
+- [Standalone figures](fig)
 
 ### GMM data
 
