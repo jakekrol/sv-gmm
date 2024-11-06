@@ -6,16 +6,20 @@ Visualizing sample-wise alignment evidence for variants across different modes f
 
 ### Updates
 
+#### 11/6/2024
+
+- Add more read context (1000x sv length from each breakpoint) and set samplot start and end to the breakpoints. 
+
 #### 11/5/2024
 
 - Sample BAMs were downloaded from 1000 genomes (phase 3, low coverage) aws s3 
 - For a given variant, samples (individuals) were randomly selected from different modes and samplot'ed adjacently for comparison.
-    - This was repeated 5 times for each variant
+    - This was repeated 5 times for each variant.
 
 ### Results
 
 - [Summary PDF](summary.pdf)
-    - Download or select `More pages` on GitHub interface to see full results 
+    - Download or select `More pages` on GitHub interface to see full results.
 
 - [Standalone figures](fig)
 
