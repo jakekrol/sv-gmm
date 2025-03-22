@@ -3,10 +3,14 @@ import pandas as pd
 import json
 import os,sys
 import subprocess
+import time
 
 PADDING=20000
 REFPATH='/data/jake/examples/data/grch38/GRCh38_full_analysis_set_plus_decoy_hla.fa'
 logfile='json2samplot.log'
+with open(logfile, 'w') as f:
+    # write the time
+    f.write(f'{time.ctime()}\n')
 
 index='/data/jake/sv-gmm/data/1000G_2504_high_coverage.sequence.index'
 dbam='/data/jake/sv-gmm/data/2025_03_21-highcov_bams'
@@ -53,9 +57,14 @@ for k,v in svd.items():
                     f.write(f'{sample} not found in index\n')
                 continue
             url = dfindex[dfindex['sample']==sample]['url'].values[0]
-            out = os.path.join(dbam,f'{sample}_{svid}.bam')
-            dlcram(url, REFPATH, chrm, pstart, pend, out)
-            print(f'wrote {out}')
+            out = os.path.join(dbam,f'{svid}.mode_1.{sample}.{chrm}.{start}.{end}.bam')
+            try:
+                dlcram(url, REFPATH, chrm, pstart, pend, out)
+                print(f'wrote {out}')
+            except:
+                # write to logfile
+                with open(logfile, 'a') as f:
+                    f.write(f'failed to download {out}\n')
     if "mode_2" in v.keys():
         for sample in v['mode_2']:
             if sample not in dfindex['sample'].values:
@@ -64,9 +73,14 @@ for k,v in svd.items():
                     f.write(f'{sample} not found in index\n')
                 continue
             url = dfindex[dfindex['sample']==sample]['url'].values[0]
-            out = os.path.join(dbam,f'{sample}_{svid}.bam')
-            dlcram(url, REFPATH, chrm, pstart, pend, out)
-            print(f'wrote {out}')
+            out = os.path.join(dbam,f'{svid}.mode_2.{sample}.{chrm}.{start}.{end}.bam')
+            try:
+                dlcram(url, REFPATH, chrm, pstart, pend, out)
+                print(f'wrote {out}')
+            except:
+                # write to logfile
+                with open(logfile, 'a') as f:
+                    f.write(f'failed to download {out}\n')
     if "mode_3" in v.keys():
         for sample in v['mode_3']:
             if sample not in dfindex['sample'].values:
@@ -74,5 +88,14 @@ for k,v in svd.items():
                 with open(logfile, 'a') as f:
                     f.write(f'{sample} not found in index\n')
                 continue
+            url = dfindex[dfindex['sample']==sample]['url'].values[0]
+            out = os.path.join(dbam,f'{svid}.mode_3.{sample}.{chrm}.{start}.{end}.bam')
+            try:
+                dlcram(url, REFPATH, chrm, pstart, pend, out)
+                print(f'wrote {out}')
+            except:
+                # write to logfile
+                with open(logfile, 'a') as f:
+                    f.write(f'failed to download {out}\n')
 
 
