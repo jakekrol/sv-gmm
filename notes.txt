@@ -1,0 +1,77 @@
+03/21/2025
+- reference genome path: /data/jake/examples/data/grch38/GRCh38_full_analysis_set_plus_decoy_hla.fa
+- samplotting high coverage variants
+    example variant
+        SVID HGSV_208475
+        num modes predicted 2
+        chrm 16
+        start 34623172
+        pstart 34616372
+        pstart2 33943172
+        end 34623240
+        pend 34630040
+        pend2 35303240
+        length 68
+        sample1: NA19731
+            path: ftp://ftp.sra.ebi.ac.uk/vol1/run/ERR323/ERR3239931/NA19731.final.cram
+
+downloading as bam
+// old // samtools view -T /data/jake/examples/data/grch38/GRCh38_full_analysis_set_plus_decoy_hla.fa -h ftp://ftp.sra.ebi.ac.uk/vol1/run/ERR323/ERR3239931/NA19731.final.cram 16:34616372-34630040 -o output.sam
+// pstart1,pend1 //  samtools view -b -T /data/jake/examples/data/grch38/GRCh38_full_analysis_set_plus_decoy_hla.fa -h ftp://ftp.sra.ebi.ac.uk/vol1/run/ERR323/ERR3239931/NA19731.final.cram chr16:34616372-34630040 -o output.bam
+// pstart2,pend2 //  samtools view -b -T /data/jake/examples/data/grch38/GRCh38_full_analysis_set_plus_decoy_hla.fa -h ftp://ftp.sra.ebi.ac.uk/vol1/run/ERR323/ERR3239931/NA19731.final.cram chr16:33943172-35303240 -o output.bam
+
+note: use the 
+
+final cmds:
+download: samtools view -b -T /data/jake/examples/data/grch38/GRCh38_full_analysis_set_plus_decoy_hla.fa -h ftp://ftp.sra.ebi.ac.uk/vol1/run/ERR323/ERR3239931/NA19731.final.cram chr16:33943172-35303240 -o output.bam
+    pad the downloaded regions by 20000 in each direction (for coverage context)
+index: samtools index output.bam
+plot: samplot plot -n NA19731 -b output.bam -o p.png -c chr16 -s 34623172 -e 34623240 -t DEL --zoom 1000
+    zoom will show -1000 and +1000 the sv breakpoints
+
+formally how do I plot all the samples?
+current goal: plot each variant individually
+input: 
+    - index file from "s3://1000genomes/1000G_2504_high_coverage/1000G_2504_high_coverage.sequence.index"
+        - file locations
+    - TSV
+        - sample
+        - region
+            - chr
+            - start
+            - end
+            - length
+        - mode
+        - svid
+        - allele freq
+        - num of modes predicted
+step 1: see svdata2dict.py
+- make a d1 with svid keys
+    - v1 is also a d, d2
+        - d2 keys
+            - region data
+            - allele freq
+            - modes (dict)
+                - m1, ... mk are keys
+                - keys point to samples
+            - num of modes predicted
+
+
+
+
+index
+samtools index output.bam
+samplot plot -n NA19731 -b output.bam -o p.png -c chr16 -s 34623172 -e 34623240 -t DEL
+
+step 2: download bams
+- input:
+    - index file of urls
+    - json
+- goal:
+    - loop through json and download the sv region
+    
+see json2samplot.py
+
+
+
+
