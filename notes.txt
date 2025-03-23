@@ -128,6 +128,26 @@ ls *.bam | gargs -s '\.' -p 10 -o "samplot plot -b {0}.{1}.{2}.{3}.{4}.{5}.{6} -
 
 - good, but the start/end coord needs to be unpadded when plotting
 
+# 03/23/2025
+1) replace the filename padded start/end coords with unpadded for plot params
+    example:
+        HGSV_58245: 
+        start/end: 9473951	9474534
+        fname: 9453951.9494534
+        yep, the fname is padded
+        sub w/ sed
+done
+2) plot
+A few errors
+- ERROR with command: Command('samplot plot -b HGSV_58245.mode_2.NA18548.4.9473951.9474534.bam -n HGSV_58245.mo...', stdout: '', exit-code: 1, error: exit status 1, run-time: 1.424587969s)
+- ERROR with command: Command('samplot plot -b HGSV_58245.mode_2.NA18647.4.9473951.9474534.bam -n HGSV_58245.mo...', stdout: '', exit-code: 1, error: exit status 1, run-time: 2.102603147s)
+- ERROR with command: Command('samplot plot -b HGSV_2123.mode_2.NA18536.1.19628382.19628449.bam -n HGSV_2123.mo...', stdout: '', exit-code: 1, error: exit status 1, run-time: 2.128860232s)
+- ERROR with command: Command('samplot plot -b HGSV_2123.mode_2.NA18614.1.19628382.19628449.bam -n HGSV_2123.mo...', stdout: '', exit-code: 1, error: exit status 1, run-time: 1.613876354s)
+- ERROR with command: Command('samplot plot -b HGSV_2123.mode_2.HG00245.1.19628382.19628449.bam -n HGSV_2123.mo...', stdout: '', exit-code: 1, error: exit status 1, run-time: 1.496846337s)
+- ERROR with command: Command('samplot plot -b HGSV_58245.mode_2.NA20889.4.9473951.9474534.bam -n HGSV_58245.mo...', stdout: '', exit-code: 1, error: exit status 1, run-time: 1.922639509s)
+done
+
+
 
 
 
