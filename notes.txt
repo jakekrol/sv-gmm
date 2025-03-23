@@ -72,6 +72,64 @@ step 2: download bams
     
 see json2samplot.py
 
+error: 
+samtools view: error closing "ftp://ftp.sra.ebi.ac.uk/vol1/run/ERR323/ERR3239929/NA19728.final.cram"
+
+03/22/2025
+- check CRAM downloads
+269 bams
+328 crai files
+21 errors in json2samplot.log file
+- index bams
+- identify errored dls
+- not in 1000G index
+    - NA21113
+    - NA20900
+- failed download
+    - the crais were downloaded not sure what the issue was
+    - do retry
+        NA19102
+        HG02666
+        NA12383
+        HG00245
+        NA11893
+        NA12842
+        NA18536
+        NA18610
+        NA18614
+        NA18978
+        NA18548
+        NA18647
+        NA18934
+        NA19023
+        NA20351
+        NA20889
+        NA21135
+        NA18611
+        HG01988
+
+solution for failed downloads:
+    - simply retry 
+
+Some warning: [main_samview] region ".mode_2.NA18614.13.63819029.63860373.bam" specifies an invalid region or unknown reference. Continue anyway.
+[main_samview] region ".mode_3.HG01988.13.63819029.63860373.bam" specifies an invalid region or unknown reference. Continue anyway.
+CompletedProcess(args='samtools view -b -T /data/jake/examples/data/grch38/GRCh38_full_analysis_set_plus_decoy_hla.fa -h ftp://ftp.sra.ebi.ac.uk/vol1/run/ERR324/ERR3242297/HG01988.final.cram chr13:63799029-63880373 -o /data/jake/sv-gmm/data/2025_03_22-highcov_bams_retry/HGSV_183778 .mode_3.HG01988.13.63819029.63860373.bam', returncode=0)
+
+- there was a space suffixing HGSV_183778 in the table
+    - caused writing all files w/ this svid to have same name
+- do a redownload
+- done /data/jake/sv-gmm/data/2025_03_22-highcov_bams_retry
+
+
+Next do samplot
+- 2025_03_22-highcov-samplots/
+plot: samplot plot -n NA19731 -b output.bam -o p.png -c chr16 -s 34623172 -e 34623240 -t DEL --zoom 1000
+ls *.bam | gargs -s '\.' -p 10 -o "samplot plot -b {0}.{1}.{2}.{3}.{4}.{5}.{6} -n {0}.{1}.{2}.{3}.{4}.{5} -t DEL -s {4} -e {5} -c {3} -o {0}.{1}.{2}.{3}.{4}.{5}.png --zoom 1000"
+
+- good, but the start/end coord needs to be unpadded when plotting
+
+
+
 
 
 
