@@ -6,6 +6,12 @@ Visualizing sample-wise alignment evidence for variants across different modes f
 
 ### Updates
 
+#### 03/23/2025
+
+- Plotted high coverage sample SVs
+  - data: data/high_cov.tsv
+  - plots: data/2025_03_22-highcov-samplots/samplots.zip
+
 #### 11/6/2024
 
 - Add more read context (1000x sv length from each breakpoint) and set samplot start and end to the breakpoints. 
