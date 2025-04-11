@@ -3,9 +3,10 @@ import json
 import os,sys
 import pandas as pd
 
-PADDING=20000
+# PADDING=20000
 
-data = 'high_cov.tsv'
+# data = 'high_cov.tsv'
+data='2025_04_08-high_cov.tsv'
 df = pd.read_csv(data, sep='\t')
 df.columns = ["sv_id", "num_modes_predicted", "chr", "start", "stop", "allele_frequency", "length", "mode_1", "mode_2", "mode_3"]
 print(df)
@@ -18,13 +19,16 @@ for i,row in df.iterrows():
     chrm = row['chr']
     start = row['start']
     stop = row['stop']
+    PADDING = max(stop-start,20000) # 20kbp or more if sv is large
     pstart = start - PADDING
     pend = stop + PADDING
     d[svid]['chr'] = chrm
-    d[svid]['start'] = pstart
-    d[svid]['stop'] = pend
+    d[svid]['start'] = start
+    d[svid]['stop'] = stop
+    d[svid]['pstart'] = pstart
+    d[svid]['pstop'] = pend
     d[svid]['length'] = row['length']
-    d[svid]['allele_frequency'] = row['allele_frequency']
+    # d[svid]['allele_frequency'] = row['allele_frequency']
     d[svid]['num_modes_predicted'] = row['num_modes_predicted']
     # mode data
     mode1 = row['mode_1']
@@ -45,6 +49,6 @@ for i,row in df.iterrows():
         
 
 # write to json
-with open('svdata2.json', 'w') as f:
+with open('2025_04_08-highcov_svdata.json', 'w') as f:
     json.dump(d, f, indent=4)
     

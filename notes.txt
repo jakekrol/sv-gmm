@@ -1,3 +1,88 @@
+04/11/2025
+plotting new high cov bams CONT
+- downloaded all bams to /data/jake/sv-gmm/data/2025_04_09-highcov-bams
+
+
+code:
+    bams=($(ls | grep "bam$" | grep "${svid}" | grep "mode_${m}" ))
+    samtools merge -o merged/${svid}.mode_${m}.merged.bam ${bams[@]} && (cd merged && samtools index ${svid}.mode_${m}.merged.bam)
+    high mapping quality
+    samplot plot -n \
+        ${svid}.mode_1.merged.bam ${svid}.mode_2.merged.bam ${svid}.mode_3.merged.bam \
+        -b ${svid}.mode_1.merged.bam ${svid}.mode_2.merged.bam ${svid}.mode_3.merged.bam \
+        -c $c -s $s -e $e -t DEL -o ${svid}.merged.q40.reads.png --zoom 1000 -q 40
+    covonly
+    samplot plot -n ${svid}.mode_1.merged.bam ${svid}.mode_2.merged.bam ${svid}.mode_3.merged.bam \
+        -b ${svid}.mode_1.merged.bam ${svid}.mode_2.merged.bam ${svid}.mode_3.merged.bam \
+        -c $c -s $s -e $e -t DEL -o ${svid}.merged.covonly.png --zoom 1000 --coverage_only
+
+zoom=1000 unless otherwise stated
+HGSV_159531
+HGSV_161412
+HGSV_161613
+    zoom=5000
+HGSV_162977
+    zoom=2000
+HGSV_162978
+    zoom=2000
+HGSV_197680
+HGSV_183747
+HGSV_160451
+    zoom=25000
+
+04/10/2025
+Try redownloading the failed samples one more time
+./json2bams.py -i 2025_04_08-highcov_svdata.json -o 2025_04_10-highcov-bams -s 2025_04_10-retry_sample.txt -c 2025_04_10-highcov-bams
+done
+now index
+done
+now merge by svid,mode
+
+found bug where all filenames get mode1
+- check the json
+    - json looks correct
+- check json2bams
+    - found bug, mode_1 was hardcoded into output filename, should be fixed now
+- options:
+    1. redownload
+    2. rename
+- will just redownload since it's automatic, not efficient though
+
+
+04/09/2025
+Do:
+    - Download new sample BAMs (see json2samplot)
+        - check log file and do again (some failed and I acc cancelled)
+    - reindex
+    - Merge (samtools merge)
+    - Plot (samplot)
+
+Q: is it worth refactoring json2samplot.py?
+- Try for 15 m
+- done see json2bams.py
+
+03/27/2025
+Merge BAMs by SVID-mode and plot by SVID, stack by mode
+steps:
+    1. gather all bams with shared SVID,mode
+    2. merge
+    3. plot each SVID, subplots are modes
+HGSV_183778 (3 modes),HGSV_204433 (2 modes),HGSV_2123 (2 modes),HGSV_58245 (3 modes),HGSV_208475 (2 modes)
+
+i made a dir for each sv and ran this cmd about 15 times. swapping out svid and mode
+ex merge cmd: samtools merge merged.HGSV_204433.mode_2.bam $(ls | grep "mode_2" | grep -v "bai$")
+don't forget to index the merged bam
+ex plot cmd: samplot plot -b merged.HGSV_183778.mode_1.bam merged.HGSV_183778.mode_2.bam merged.HGSV_183778.mode_3.bam -c 13 -s 63839029 -e 63840373 -t DEL -o p.png
+
+03/25/2025
+Q: can I aggregate reads from many samples into a single plot
+A: yes two possible methods
+    1. horizontally stacked plots (supported by samplot -b <bam_1> ... <bam_n)
+    samplot plot -b HGSV_58245.mode_3.NA18611.4.9473951.9474534.bam HGSV_58245.mode_2.NA21135.4.9473951.9474534.bam -c 4 -s 9473951 -e 9474534 -t DEL -o test.png
+    2. Merge bams? 
+    samplot plot -b z.bam -c 4 -s 9473951 -e 9474534 -t DEL -o test2.png
+
+
 03/21/2025
 - reference genome path: /data/jake/examples/data/grch38/GRCh38_full_analysis_set_plus_decoy_hla.fa
 - samplotting high coverage variants
