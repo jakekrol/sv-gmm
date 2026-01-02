@@ -1,3 +1,112 @@
+# 01/01/2026
+
+## goal 1: parse icgc svs for stix query input
+
+```
+cd /data/jake/sv-gmm/data/2025_12_3-pcawg_sv_callset/icgc_sv_public_passonly/icgc/open
+zcat \
+    8c0a7dfa-6ec3-4262-b718-c3605722df37.pcawg_consensus_1.6.161116.somatic.sv.bedpe.gz | \
+    head
+# chrom1  start1  end1    chrom2  start2  end2    sv_id   pe_support      strand1 strand2 svclass svmethod
+# 1       25248495        25248496        1       145291365       145291366       SVMERGE132      22      -       -       t2tINV  SNOWMAN_DELLY
+# 1       31959835        31959836        1       46434804        46434805        SVMERGE17       46      -       -       t2tINV  SNOWMAN_BRASS_dRANGER_DELLY
+# 1       32173095        32173096        1       55828194        55828195        SVMERGE61       39      +       +       h2hINV  BRASS_dRANGER_DELLY
+# 1       39705730        39705731        1       43315264        43315265        SVMERGE6        24      -       +       DUP     SNOWMAN_BRASS_dRANGER_DELLY
+# 1       39806674        39806675        1       154987385       154987386       SVMERGE62       26      +       -       DEL     SNOWMAN_BRASS_dRANGER_DELLY
+# 1       39886819        39886820        1       151783724       151783725       SVMERGE59       11      -       +       DUP     SNOWMAN_BRASS
+# 1       39890842        39890843        1       39897465        39897466        SVMERGE60       19      +       -       DEL     SNOWMAN_BRASS_dRANGER_DELLY
+# 1       40987384        40987385        1       48804168        48804169        SVMERGE25       20      +       -       DEL     SNOWMAN_BRASS_dRANGER_DELLY
+# 1       42978291        42978292        1       152844280       152844281       SVMERGE47       4       -       -       t2tINV  SNOWMAN_dRANGER
+```
+- left region c1-3
+- right region c4-6
+- type c11
+- using /data/jake/sv-gmm/results/2026_01-icgc_svs/run.sh
+found these are the SV types
+DEL
+DUP
+h2hINV
+t2tINV
+TRA
+mapping
+DEL -> DEL
+DUP -> DUP
+h2hINV -> INV
+t2tINV -> INV
+TRA -> BND
+
+## goal 2: start stix queries for icgc dels
+
+- approach
+    - input: /data/jake/sv-gmm/results/2026_01-icgc_svs/del/*.bedpe
+    - index: 
+    - shardfile: /data/jake/stix-pcawg-dna/shardfiles/shardfile.tumor.tsv
+    - do gargs parallel over the input files
+
+- runs almost setup
+    - see /data/jake/sv-gmm/results/2026_01-igcg_svs_stix_out/run.sh
+    - problem:
+        - concatenating each file loses info on the sv query region, ...
+    - potential solutions:
+        - make a single file of svs to query, and use the output file name to denote the sample of origin.
+            - so, add a column for sample in the master sv query file
+
+## summary
+- parsed icgc svs into stix query format
+- mostly setup stix runs
+    - need to address problem above ^
+
+## next step
+- make a master icgc sv query file with originating sample column
+- modify /data/jake/sv-gmm/results/2026_01-igcg_svs_stix_out/run.sh to support this
+
+# 12/22/2025
+
+## goal 1: test code
+
+- https://github.com/vivian-m-li/sv_gmm/blob/master/test_run.sh
+- repo cloned at /data/jake/sv_gmm
+- test script worked
+    - requires small fix of process_data.py#L416
+```
+cd /data/jake/sv_gmm
+./test_run.sh
+```
+
+## goal 2: count num pcawg svs
+
+- ... tcga v pcawg v icgc ...
+    - tcga is mostly WES
+    - icgc is probably better for eval on pcawg
+
+```
+cd /data/jake/sv-gmm/data/2025_12_3-pcawg_sv_callset/icgc_sv_public_passonly/icgc/open
+zcat *.gz | wc -l
+# 181899
+```
+
+## next steps
+- re-index pcawg dna indices into same format as long read grch38 index (/data/stix/LR/2024-09-05)
+- streamline mapping of icgc sv bedpe files into stix queries
+
+# 10/31/2025
+
+## goal: plot long read bams at given sv region
+- done see results/2025_10-long_read_plot
+- interpretation
+    - HG03085, HG03548 have diff breakpoints
+    - why some samples not have DEL despite STIX SV evidence
+    e.g., NA20822.bam
+    NA20822 looks like a FP DEL call
+    I would recommend querying this region in LR STIX and look at the 
+    num. supporting split reads for this sample and compare it to the rest.
+    Based on this plot, I would expect it to have much fewer than the other samples.
+    For example, plot the distribution of split reads for each sample, and see where NA20822 falls.
+    Same for NA20822
+
+
+
+
 04/11/2025
 plotting new high cov bams CONT
 - downloaded all bams to /data/jake/sv-gmm/data/2025_04_09-highcov-bams
