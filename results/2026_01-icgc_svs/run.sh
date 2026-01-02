@@ -15,12 +15,16 @@ echo "# parsing svs"
 icgc_sv2stix_sv () {
     local file_icgc="$1"
     local outfile="$2"
+    outbase=$(basename "${outfile}")
+    id="$(echo "${outbase}" | cut -d'.' -f1)"
     zcat "${file_icgc}" | \
         tail -n +2 | \
         cut -f 1-6,11 | \
         sed 's|h2hINV|INV|g' | \
         sed 's|t2tINV|INV|g' | \
-        sed 's|TRA|BND|g' > \
+        sed 's|TRA|BND|g' | \
+        # add id column
+        sed "s|$|\t${id}|" > \
         "${outfile}"
 }
 
@@ -52,6 +56,9 @@ for f in "${files[@]}"; do
     echo "# completed ${i} of ${n} samples"
     i=$((i+1))
 done
+
+echo "# making a single file with all DELs"
+cat ${outdir_del}/*.bedpe > icgc_stix_del.bedpe
 
 echo "# completed in $(($(date +%s) - t_0)) seconds"
 
