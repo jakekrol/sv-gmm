@@ -1,1 +1,0 @@
-stix output for icgc dels
