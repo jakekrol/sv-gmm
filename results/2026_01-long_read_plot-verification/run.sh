@@ -9,11 +9,8 @@ if [ ! -f GCA_000001405.15_GRCh38_no_alt_analysis_set.fna ]; then
 fi
 ref=GCA_000001405.15_GRCh38_no_alt_analysis_set.fna
 samples=("HG00149" "HG03548")
-# cram_hg03085=https://ftp.1000genomes.ebi.ac.uk/vol1/ftp/data_collections/1KG_ONT_VIENNA/hg38/HG03085.hg38.cram
-# cram_hg03548=https://ftp.1000genomes.ebi.ac.uk/vol1/ftp/data_collections/1KG_ONT_VIENNA/hg38/HG03548.hg38.cram
 echo "# downloading 1kg ont vienna indices for ${samples[*]}"
 for s in "${samples[@]}"; do
-    # avoid creating .1, .2, ... on repeated runs
     wget -nc "ftp://ftp.1000genomes.ebi.ac.uk/vol1/ftp/data_collections/1KG_ONT_VIENNA/hg38/${s}.hg38.cram.crai"
 done
 
