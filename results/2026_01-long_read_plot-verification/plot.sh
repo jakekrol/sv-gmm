@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 
 dout=$(pwd)
-# crams=(HG00149.hg38.cram HG03548.hg38.cram)
-crams=(HG00149.hg38.cram)
+crams=(HG00149.hg38.cram HG03548.hg38.cram)
+# crams=(HG00149.hg38.cram)
 # sv region
 left="173522965"
 right="173524108"
