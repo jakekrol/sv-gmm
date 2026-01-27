@@ -1,0 +1,1 @@
+received from Ryan over slack. probably parsed from the 1kg long read vcf: https://ftp.1000genomes.ebi.ac.uk/vol1/ftp/data_collections/1KG_ONT_VIENNA/release/v1.0/sniffles-unfiltered-hg38/
