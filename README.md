@@ -6,6 +6,9 @@ Visualizing sample-wise alignment evidence for variants across different modes f
 
 ### Updates
 
+#### 04/11/2025
+  - plots: data/2025_04_09-highcov-bams/merged
+
 #### 03/23/2025
 
 - Plotted high coverage sample SVs
