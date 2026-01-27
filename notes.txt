@@ -1,3 +1,275 @@
+# 01/07/2026
+## goal 1: aggregate icgc sv stix out across shards
+- each sv gets one file
+```
+cd /data/jake/sv-gmm/results/2026_01-icgc_svs_stix_out
+mkdir -p out_agg
+dout=$(realpath out_agg)
+cd out
+mapfile -t dirs < <(ls)
+for d in ${dirs[@]}; do
+    echo "# processing dir $d"
+    for file in $(ls $d); do
+        cat "${d}/${file}" >> "${dout}/${file}"
+    done
+done
+```
+## goal 2: get distribution of num. samples per sv
+
+- see /data/jake/sv-gmm/results/2026_01-icgc_svs_sample_count_dist/run.sh
+
+
+# 01/05/2026
+
+## goal 1: check icgc del query status
+- done. # completed in 114720 seconds (~31 hours)
+
+## next steps
+- aggregate stix sv evidence across shards
+- get a distribution of sample counts per sv
+i assume the greater amount of samples with sv evidence,
+means better candidate for de-merging
+
+# 01/03/2026
+
+## goal 1: start icgc del stix queries
+
+modify /data/jake/sv-gmm/results/2026_01-igcg_svs_stix_out/run.sh
+to use the modified stix
+approach:
+- for each sv file
+    - for each sv in each file
+        - for each shard
+            - do stix query
+- which step is easiest to parallelize?
+- i decided to parralalize at over svs in the files
+- started running Jan 3 8:50p with 30 cores
+
+## summary
+- started sveperator stix queries for icgc dels
+
+## next steps
+- check stix query progress
+
+
+# 01/02/2026
+
+## goal 1: check the required stix output format for sveperator
+```
+head /data/jake/sv_gmm/assets/3:173522965_3:173524108.txt
+3       bed_0/HG00122.bed.gz    3       173522849       173522939       3       173524168       173524318       paired
+3       bed_0/HG00122.bed.gz    3       173522873       173522939       3       173524105       173524255       paired
+3       bed_0/HG00122.bed.gz    3       173522881       173522939       3       173524242       173524392       paired
+17      bed_0/HG00252.bed.gz    3       173522743       173522893       3       173524099       173524249       paired
+17      bed_0/HG00252.bed.gz    3       173522749       173522899       3       173524136       173524286       paired
+17      bed_0/HG00252.bed.gz    3       173522779       173522929       3       173524172       173524322       paired
+17      bed_0/HG00252.bed.gz    3       173522790       173522940       3       173524180       173524330       paired
+17      bed_0/HG00252.bed.gz    3       173522849       173522939       3       173524115       173524265       paired
+17      bed_0/HG00252.bed.gz    3       173522867       173522939       3       173524381       173524531       paired
+17      bed_0/HG00252.bed.gz    3       173522869       173522939       3       173524253       173524403       paired
+```
+- columns (9)
+sample id (?), filename, left chrom, left start, left end, 
+right chrom, right start, right end, read evidence type (split or paired)
+
+## goal 2: try to use modified version of stix
+- problem: singularity cannot perform a mount for fakeroot
+- solution: see /data/Users/jakr3437/sv/README.md and stix-giggle_only.sif
+/data/Users/jakr3437/sv/run-modified.sh for modified stix
+- unfortunately, modified version does not inherently support sharding
+
+test
+zcat ./blood_tumor.data.0/FI25349.excord.bed.gz | head -n 2000 | l
+1       10000   10000   -1      1       10053   10154   1       0
+```
+cd /data/jake/stix-pcawg-dna
+stix \
+    -t DEL \
+    -l 1:10000-10000 \
+    -r 1:10050-10200 \
+    -g \
+    -s 500 \
+    -i blood_tumor.index.0 \
+    -d blood_tumor.0.ped.db
+# 1       10000   10000   1       10458   10559   paired
+# 1       10000   10000   1       10377   10465   paired
+# 1       10000   10000   1       10389   10471   paired
+# 1       10000   10000   1       10403   10471   paired
+
+# no -g
+stix \
+    -t DEL \
+    -l 1:10000-10000 \
+    -r 1:10050-10200 \
+    -s 500 \
+    -i blood_tumor.index.0 \
+    -d blood_tumor.0.ped.db
+# Total   0:1     18:1    0:0:3   0:0:0:1
+# Giggle_File_Id  sample  sex     population      super_population        alt_file        File_ID objectId        File_Name       ICGC_Donor      ICGC_Specimen_ID    Specimen_Type   ICGC_Sample_ID  Project Study   Data_Type       Experimental_Strategy   Format  analysisId      ega_dataset_id  ega_analysis_id     ega_file_id     pcawg   ega_run_id      sftp_location   gdc_id  pdc_id  location        Pairend Split
+# 0       FI10536 NA      NA      NA      FI10536.excord.bed.gz   FI10536 bf32b2d0-feb7-5130-a2c3-d2f454e256c5    1b3cd123e38902c80d882a8200ab9567.bamDO52710 SP116752        Primary tumour - blood derived (peripheral blood)       SA542187        CLLE-ES PCAWG   BAM     WGS     BAM     a48b7579-20a3-4831-98c1-fa418fb5475b        EGAD00001002130 EGAZ00001225857 EGAF00001161071 whitelist       NA      NA      NA      NA      EGA     1       0
+# 1       FI1221  NA      NA      NA      FI1221.excord.bed.gz    FI1221  cf8a8006-bf49-5383-a72a-2b75f4c61793    beff43f233a2de03ee39247c319df55c.bamDO51989 SP115128        Primary tumour - blood derived (peripheral blood)       SA539021        CLLE-ES PCAWG   BAM     WGS     BAM     640f7e38-cf26-4a83-8806-bdb74f4ee19b        EGAD00001002130 EGAZ00001226037 EGAF00001166135 whitelist       NA      NA      NA      NA      EGA     0       0
+# 2       FI16329 NA      NA      NA      FI16329.excord.bed.gz   FI16329 4b77e79e-17c9-5d8f-afd1-89b9bcb803d4    4cd74e8e5c0f2ec4fd155ccad999f585.bamDO6360  SP13289 Primary tumour - blood derived (peripheral blood)       SA86215 CLLE-ES PCAWG   BAM     WGS     BAM     a018f432-8ca4-4c7e-ac6d-390315fccd03        EGAD00001002130 EGAZ00001225848 EGAF00001160915 graylist        NA      NA      NA      NA      EGA     0       0
+# 3       FI18393 NA      NA      NA      FI18393.excord.bed.gz   FI18393 63d853b5-06f8-56c5-bbeb-f2cb100e5f4f    cb7fdfc02c2ac2e88a1a83758543b4bc.bamDO52751 SP116881        Primary tumour - blood derived (peripheral blood)       SA542263        CMDI-UK PCAWG   BAM     WGS     BAM     c93b0191-7465-484b-ace2-aa05e70e307b        EGAD00001002664 EGAZ00001223975 EGAF00001143318 whitelist       NA      NA      NA      NA      EGA     0       0
+# 4       FI19759 NA      NA      NA      FI19759.excord.bed.gz   FI19759 0f96e7f6-c27b-5141-a07e-6588a28dd6db    c460fc95ac7ecec9bd33fe19f15d80f7.bamDO52712 SP116756        Primary tumour - blood derived (peripheral blood)       SA542191        CLLE-ES PCAWG   BAM     WGS     BAM     17f04fef-3c5a-4f04-8ad9-d9caf06f0eca        EGAD00001002130 EGAZ00001226009 EGAF00001166072 whitelist       NA      NA      NA      NA      EGA     0       0
+# 5       FI22609 NA      NA      NA      FI22609.excord.bed.gz   FI22609 985bb013-970a-510e-89f4-41fc68f9aba4    1c1e0d87f4ea811426b0ea642a9415b5.bamDO52714 SP116760        Primary tumour - blood derived (peripheral blood)       SA542195        CLLE-ES PCAWG   BAM     WGS     BAM     0558fae6-0e1e-443a-a1a0-bee0121c90ec        EGAD00001002130 EGAZ00001225928 EGAF00001163444 whitelist       NA      NA      NA      NA      EGA     0       0
+# 6       FI25349 NA      NA      NA      FI25349.excord.bed.gz   FI25349 8fe62c28-fe64-5bd3-a456-002531bdfdf5    7588112e521f28cdbc7543d77a00b71c.bamDO52744 SP116856        Primary tumour - blood derived (peripheral blood)       SA542248        CMDI-UK PCAWG   BAM     WGS     BAM     1a1c64f3-41ed-469c-8422-4e0b19daf9a9        EGAD00001002664 EGAZ00001226095 EGAF00001171923 whitelist       NA      NA      NA      NA      EGA     0       0
+# 7       FI28065 NA      NA      NA      FI28065.excord.bed.gz   FI28065 c978f23b-01b7-5362-909a-1f7b1265560e    2d2b358bad55d71a980a0cfb78729577.bamDO52703 SP116738        Primary tumour - blood derived (peripheral blood)       SA542173        CLLE-ES PCAWG   BAM     WGS     BAM     10bddfd4-b90e-4577-819d-78ef68c4a330        EGAD00001002130 EGAZ00001226018 EGAF00001166093 whitelist       NA      NA      NA      NA      EGA     0       0
+# 8       FI29581 NA      NA      NA      FI29581.excord.bed.gz   FI29581 1ec7bfdd-30dc-5718-9eb3-863a748f2237    787de84446fa2b341360a8a267c4f80a.bamDO52742 SP116848        Primary tumour - blood derived (peripheral blood)       SA542242        CMDI-UK PCAWG   BAM     WGS     BAM     7dd8f201-45a9-4ed7-9b16-2b08f983c592        EGAD00001002664 EGAZ00001223948 EGAF00001143255 whitelist       NA      NA      NA      NA      EGA     0       0
+# 9       FI3072  NA      NA      NA      FI3072.excord.bed.gz    FI3072  862bdfc6-a38b-5300-9f04-dd4908201b9d    74445daafa8701b81ea1f4252cbcb37d.bamDO7112  SP115093        Primary tumour - blood derived (peripheral blood)       SA538998        CLLE-ES PCAWG   BAM     WGS     BAM     88f14833-e758-472d-94a3-6ec849ea4127        EGAD00001002130 EGAZ00001225868 EGAF00001161104 whitelist       NA      NA      NA      NA      EGA     0       0
+# 10      FI34707 NA      NA      NA      FI34707.excord.bed.gz   FI34707 3da02c8d-c676-5c18-a188-4aba23d5fdb1    0f59a6322e7793ac0d2588b3c9355721.bamDO52756 SP116901        Primary tumour - blood derived (peripheral blood)       SA542276        CMDI-UK PCAWG   BAM     WGS     BAM     6a04b9aa-cde1-44dc-926b-a756c6293439        EGAD00001002664 EGAZ00001223943 EGAF00001143177 whitelist       NA      NA      NA      NA      EGA     3       0
+# 11      FI38200 NA      NA      NA      FI38200.excord.bed.gz   FI38200 55af0e9f-9ccb-5653-8776-2f469e26f87e    dcf73b8addad545be5964e005ca02525.bamDO52725 SP116782        Primary tumour - blood derived (peripheral blood)       SA542217        CLLE-ES PCAWG   BAM     WGS     BAM     5ae124fe-50e3-4e93-88c6-3dd50bb8817a        EGAD00001002130 EGAZ00001226008 EGAF00001166069 whitelist       NA      NA      NA      NA      EGA     0       0
+# 12      FI40385 NA      NA      NA      FI40385.excord.bed.gz   FI40385 f4afffbc-6a1a-5801-b103-357a36c30093    474e3b36be9aba5e893234f2d4891e6e.bamDO6350  SP13278 Primary tumour - blood derived (peripheral blood)       SA86108 CLLE-ES PCAWG   BAM     WGS     BAM     c78f1fba-a72f-4dd2-8181-2527cf3caab5        EGAD00001002130 EGAZ00001225900 EGAF00001167998 whitelist       NA      NA      NA      NA      EGA     0       0
+# 13      FI41937 NA      NA      NA      FI41937.excord.bed.gz   FI41937 b5919322-4ea5-5f4c-a946-28ef0377a4d3    6d66f8bf97dba81395300707224b1c50.bamDO52749 SP116871        Primary tumour - blood derived (peripheral blood)       SA542257        CMDI-UK PCAWG   BAM     WGS     BAM     a2ff6515-a87b-40db-9295-659d62ef9a9f        EGAD00001002664 EGAZ00001226106 EGAF00001171956 whitelist       NA      NA      NA      NA      EGA     0       0
+# 14      FI45078 NA      NA      NA      FI45078.excord.bed.gz   FI45078 5707fc6d-7c9e-5e63-b28b-ac0abe632551    e94f2447ceecb2fdc85a2a68df6c497b.bamDO6418  SP13347 Primary tumour - blood derived (peripheral blood)       SA86476 CLLE-ES PCAWG   BAM     WGS     BAM     c1cb99aa-8d25-48d6-af0f-c7801d6ba9ae        EGAD00001002130 EGAZ00001225915 EGAF00001163405 whitelist       NA      NA      NA      NA      EGA     0       0
+# 15      FI48225 NA      NA      NA      FI48225.excord.bed.gz   FI48225 a3e91db3-e4d2-52f8-a83d-fb786cd05111    5cc0ab1518e2f4a06fe452a86f286bbb.bamDO6351  SP13279 Primary tumour - blood derived (peripheral blood)       SA542382        CLLE-ES PCAWG   BAM     WGS     BAM     38ec0e1c-63ac-4378-a148-93f2e3c819aa        EGAD00001002130 EGAZ00001225934 EGAF00001168001 whitelist       NA      NA      NA      NA      EGA     0       0
+# 16      FI52194 NA      NA      NA      FI52194.excord.bed.gz   FI52194 afc36c01-fd36-590e-a27d-8344ab44df1f    a3f0e1cdc517ef735aaefaca5ea847df.bamDO52740 SP116839        Primary tumour - blood derived (peripheral blood)       SA542236        CMDI-UK PCAWG   BAM     WGS     BAM     8dbfbf02-d186-4e5c-a81e-591249dc3f51        EGAD00001002664 EGAZ00001223951 EGAF00001143189 whitelist       NA      NA      NA      NA      EGA     0       0
+# 17      FI52688 NA      NA      NA      FI52688.excord.bed.gz   FI52688 1e02b76d-3709-5b47-a349-635b37fd4d9f    61f01acb98f7c4254618639b224d518a.bamDO52737 SP116823        Primary tumour - blood derived (peripheral blood)       SA542224        CMDI-UK PCAWG   BAM     WGS     BAM     4a4f9ec3-0627-4c07-a416-136a6ee9f3d4        EGAD00001002664 EGAZ00001223930 EGAF00001143228 whitelist       NA      NA      NA      NA      EGA     0       0
+# 18      FI660   NA      NA      NA      FI660.excord.bed.gz     FI660   2ef23f18-7b1a-56f2-9684-945d1b7bd8bc    93900dbc7d447f6b1492ba9606e319e7.bamDO6561  SP13490 Primary tumour - blood derived (peripheral blood)       SA85553 CLLE-ES PCAWG   BAM     WGS     BAM     e6d23a3a-7c51-4df3-8b24-1878f94d278d        EGAD00001002130 EGAZ00001225840 EGAF00001160891 whitelist       NA      NA      NA      NA      EGA     0       0
+# 19      FI8691  NA      NA      NA      FI8691.excord.bed.gz    FI8691  ea5683ac-a924-5f3d-9a93-fc8fc5092170    4ffb6cf32133a3ab91b276cb3deda300.bamDO6386  SP13315 Primary tumour - blood derived (peripheral blood)       SA542385        CLLE-ES PCAWG   BAM     WGS     BAM     cd944848-961c-4cda-b726-fbd526638af7        EGAD00001002130 EGAZ00001225987 EGAF00001166006 whitelist       NA      NA      NA      NA      EGA     0       0
+```
+- fixed this by modifying the print statement in stix.c sent by vivian
+- i had to re-make stix in the singularity dir and update the 
+run script to prioritize the new stix path since I cannot copy to /bin when not in build/root mode
+
+## summary
+
+- confirmed the output format out stix needed for sveperator
+- made a new singularity container with stix modified
+    - /data/Users/jakr3437/sv/stix-giggle_only.sif
+    - had to build locally then copy
+    - launch it with /data/Users/jakr3437/sv/run-modified.sh
+- confirmed a test with stix modified produces the format needed for sveperator
+
+## next step
+- start stix queries for icgc dels by modifying /data/jake/sv-gmm/results/2026_01-igcg_svs_stix_out/run.sh
+to use the modified stix
+
+
+
+# 01/01/2026
+
+## goal 1: parse icgc svs for stix query input
+
+```
+cd /data/jake/sv-gmm/data/2025_12_3-pcawg_sv_callset/icgc_sv_public_passonly/icgc/open
+zcat \
+    8c0a7dfa-6ec3-4262-b718-c3605722df37.pcawg_consensus_1.6.161116.somatic.sv.bedpe.gz | \
+    head
+# chrom1  start1  end1    chrom2  start2  end2    sv_id   pe_support      strand1 strand2 svclass svmethod
+# 1       25248495        25248496        1       145291365       145291366       SVMERGE132      22      -       -       t2tINV  SNOWMAN_DELLY
+# 1       31959835        31959836        1       46434804        46434805        SVMERGE17       46      -       -       t2tINV  SNOWMAN_BRASS_dRANGER_DELLY
+# 1       32173095        32173096        1       55828194        55828195        SVMERGE61       39      +       +       h2hINV  BRASS_dRANGER_DELLY
+# 1       39705730        39705731        1       43315264        43315265        SVMERGE6        24      -       +       DUP     SNOWMAN_BRASS_dRANGER_DELLY
+# 1       39806674        39806675        1       154987385       154987386       SVMERGE62       26      +       -       DEL     SNOWMAN_BRASS_dRANGER_DELLY
+# 1       39886819        39886820        1       151783724       151783725       SVMERGE59       11      -       +       DUP     SNOWMAN_BRASS
+# 1       39890842        39890843        1       39897465        39897466        SVMERGE60       19      +       -       DEL     SNOWMAN_BRASS_dRANGER_DELLY
+# 1       40987384        40987385        1       48804168        48804169        SVMERGE25       20      +       -       DEL     SNOWMAN_BRASS_dRANGER_DELLY
+# 1       42978291        42978292        1       152844280       152844281       SVMERGE47       4       -       -       t2tINV  SNOWMAN_dRANGER
+```
+- left region c1-3
+- right region c4-6
+- type c11
+- using /data/jake/sv-gmm/results/2026_01-icgc_svs/run.sh
+found these are the SV types
+DEL
+DUP
+h2hINV
+t2tINV
+TRA
+mapping
+DEL -> DEL
+DUP -> DUP
+h2hINV -> INV
+t2tINV -> INV
+TRA -> BND
+
+## goal 2: start stix queries for icgc dels
+
+- approach
+    - input: /data/jake/sv-gmm/results/2026_01-icgc_svs/del/*.bedpe
+    - index: 
+    - shardfile: /data/jake/stix-pcawg-dna/shardfiles/shardfile.tumor.tsv
+    - do gargs parallel over the input files
+
+- runs almost setup
+    - see /data/jake/sv-gmm/results/2026_01-igcg_svs_stix_out/run.sh
+    - problem:
+        - concatenating each file loses info on the sv query region, ...
+    - potential solutions:
+        - make a single file of svs to query, and use the output file name to denote the sample of origin.
+            - so, add a column for sample in the master sv query file
+- adding the hash/ID to each SV
+    - sanity check
+```
+cd /data/jake/sv-gmm/results/2026_01-icgc_svs/all
+ls | wc -l
+# 1926
+ls | cut -f 1 -d '.' | sort | uniq | wc -l
+# 1926
+```
+    - modified /data/jake/sv-gmm/results/2026_01-icgc_svs/run.sh
+    to include id column
+q: what do these ids correspond to ?
+they are filename prefix hashses that can be mapped to donor ids, file ids, etc
+q: should I merge these sv callsets? what are state of the art sv call mergers?
+
+
+## summary
+- parsed icgc svs into stix query format
+- mostly setup stix runs
+    - need to address problem above ^
+
+## next step
+- make a master icgc sv query file with originating sample column
+- modify /data/jake/sv-gmm/results/2026_01-igcg_svs_stix_out/run.sh to support this
+
+# 12/22/2025
+
+## goal 1: test code
+
+- https://github.com/vivian-m-li/sv_gmm/blob/master/test_run.sh
+- repo cloned at /data/jake/sv_gmm
+- test script worked
+    - requires small fix of process_data.py#L416
+```
+cd /data/jake/sv_gmm
+./test_run.sh
+```
+
+## goal 2: count num pcawg svs
+
+- ... tcga v pcawg v icgc ...
+    - tcga is mostly WES
+    - icgc is probably better for eval on pcawg
+
+```
+cd /data/jake/sv-gmm/data/2025_12_3-pcawg_sv_callset/icgc_sv_public_passonly/icgc/open
+zcat *.gz | wc -l
+# 181899
+```
+
+## next steps
+- re-index pcawg dna indices into same format as long read grch38 index (/data/stix/LR/2024-09-05)
+- streamline mapping of icgc sv bedpe files into stix queries
+
+# 10/31/2025
+
+## goal: plot long read bams at given sv region
+- done see results/2025_10-long_read_plot
+- interpretation
+    - HG03085, HG03548 have diff breakpoints
+    - why some samples not have DEL despite STIX SV evidence
+    e.g., NA20822.bam
+    NA20822 looks like a FP DEL call
+    I would recommend querying this region in LR STIX and look at the 
+    num. supporting split reads for this sample and compare it to the rest.
+    Based on this plot, I would expect it to have much fewer than the other samples.
+    For example, plot the distribution of split reads for each sample, and see where NA20822 falls.
+    Same for NA20822
+
+
+
+
 04/11/2025
 plotting new high cov bams CONT
 - downloaded all bams to /data/jake/sv-gmm/data/2025_04_09-highcov-bams

@@ -1,0 +1,3 @@
+*.bedpe
+*.bedpe.gz
+out*/*

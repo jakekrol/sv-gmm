@@ -2,4 +2,5 @@
 *.bam
 grch37.fa
 *.tmp
+data/2025_03_22-highcov-samplots/*
 
