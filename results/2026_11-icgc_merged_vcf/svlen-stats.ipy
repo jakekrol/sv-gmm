@@ -1,0 +1,14 @@
+# coding: utf-8
+import numpy as np
+data=[]
+with open('x', 'r') as f:
+    for line in f.readlines():
+        data.append(int(line.strip()))
+        
+data
+arr = np.array(data)
+arr
+np.median(arr)
+np.min(arr)
+np.max(arr)
+get_ipython().run_line_magic('', 'save svlen-stats.ipy')
